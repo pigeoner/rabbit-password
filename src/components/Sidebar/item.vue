@@ -20,7 +20,6 @@ defineProps({
 
 <style lang="scss" scoped>
 .sidebar-item {
-  color: #fff;
   position: relative;
   display: flex;
   align-items: center;

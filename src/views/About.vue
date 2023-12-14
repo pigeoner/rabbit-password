@@ -11,10 +11,10 @@
     <p class="text">一个密码管理器，目前仍处于开发阶段。</p>
   </div>
   <footer>
-    <p>作者: <a>pigeoner</a> &lt;zcpigeoner@163.com&gt;</p>
+    <p>作者: <a href="https://github.com/pigeoner" target="_blank">pigeoner</a> &lt;zcpigeoner@163.com&gt;</p>
     <p>版本: {{ appVersion }}</p>
     <p>许可: MIT License</p>
-    <p>仓库: <a href="https://github.com/pigeoner/rabbit-password">github.com/pigeoner/rabbit-password</a></p>
+    <p>仓库: <a href="https://github.com/pigeoner/rabbit-password" target="_blank">github.com/pigeoner/rabbit-password</a></p>
   </footer>
 </template>
 

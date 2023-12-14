@@ -56,9 +56,19 @@ const resetForm = formName => {
 
 <style lang="scss" scoped>
 .el-form {
-  :deep(.el-input__inner) {
-    box-shadow: none !important;
+  .el-form-item {
+    border: none;
+    .el-input {
+      // box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.2);
+      :deep(.el-input__inner) {
+        // box-shadow: none !important;
+      }
+      :deep(.el-input__wrapper) {
+        // box-shadow: none !important;
+      }
+    }
   }
+
   .password-input {
     gap: 20px;
     :deep(.el-form-item__content) {

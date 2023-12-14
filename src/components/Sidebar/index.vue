@@ -44,16 +44,17 @@ import { Lock, Setting, InfoFilled } from '@element-plus/icons-vue';
 }
 .tabs {
   .router-link-active {
-    color: #fff;
     height: 100%;
     width: 100%;
     .sidebar-item {
-      background-color: #868f98;
+      // background-color: #868f98;
+      background-color: #515d69;
     }
   }
   a:hover {
     .sidebar-item {
-      background-color: #b5bec7;
+      // background-color: #b5bec7;
+      background-color: #6e7780;
     }
   }
 }

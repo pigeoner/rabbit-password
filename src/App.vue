@@ -2,13 +2,13 @@
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
 import Greet from './components/Greet.vue';
-import Sidebar from './components/Sidebar/index.vue';
+import SideBar from './components/SideBar/index.vue';
 </script>
 
 <template>
   <el-container class="container">
     <el-aside width="150px">
-      <Sidebar />
+      <SideBar />
     </el-aside>
     <el-main>
       <router-view></router-view>
@@ -28,11 +28,9 @@ import Sidebar from './components/Sidebar/index.vue';
   padding: 0;
   height: 100vh;
   .el-aside {
-    background-color: #545c64;
-    color: #fff;
-    .el-menu-item {
-      color: #fff;
-    }
+    /* background-color: #545c64; */
+    background-color: #2c3034;
+    color: #e3e4e4;
   }
   .el-main {
     position: relative;
