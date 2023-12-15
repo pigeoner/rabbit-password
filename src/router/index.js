@@ -26,8 +26,22 @@ const router = createRouter({
       path: '/pwd/:id?',
       name: 'pwdInfo',
       component: () => import('../views/PwdInfo.vue')
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('../views/Login.vue')
     }
   ]
+});
+
+// beforeEach
+router.beforeEach((to, from, next) => {
+  if (sessionStorage.getItem('isLogin') || to.path === '/login') {
+    next();
+  } else {
+    next('/login');
+  }
 });
 
 export default router;

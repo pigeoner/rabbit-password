@@ -9,25 +9,25 @@
   </el-page-header>
   <el-form :model="form" label-width="120px">
     <el-form-item label="服务名称">
-      <el-input v-model="form.name" />
+      <el-input v-model="form.name" :disabled="!isEdit && !!pwdId" />
     </el-form-item>
     <el-form-item label="url 链接">
-      <el-input v-model="form.url" />
+      <el-input v-model="form.url" :disabled="!isEdit && !!pwdId" />
     </el-form-item>
     <el-form-item label="描述信息">
-      <el-input v-model="form.description" type="textarea" :rows="3" />
+      <el-input v-model="form.description" type="textarea" :rows="3" :disabled="!isEdit && !!pwdId" />
     </el-form-item>
     <el-form-item label="登录用户名">
-      <el-input v-model="form.username" />
+      <el-input v-model="form.username" :disabled="!isEdit && !!pwdId" />
     </el-form-item>
     <el-form-item label="邮箱">
-      <el-input v-model="form.email" />
+      <el-input v-model="form.email" :disabled="!isEdit && !!pwdId" />
     </el-form-item>
     <el-form-item label="手机号">
-      <el-input v-model="form.phone" />
+      <el-input v-model="form.phone" :disabled="!isEdit && !!pwdId" />
     </el-form-item>
     <el-form-item label="密码">
-      <el-input v-model="form.pwd" />
+      <el-input v-model="form.pwd" :disabled="!isEdit && !!pwdId" show-password />
     </el-form-item>
     <el-form-item class="submit-buttons">
       <template v-if="!pwdId">
@@ -48,12 +48,28 @@
 import { reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { DArrowLeft } from '@element-plus/icons-vue';
+import { invoke } from '@tauri-apps/api/tauri';
 const route = useRoute();
 const router = useRouter();
 
 // 通过路由参数获得当前界面的密码 id
 // 如果 id 为 undefined，说明是新增密码
-const pwdId = ref(route.params.id);
+const pwdId = ref(+route.params.id || 0);
+
+// 获取信息
+invoke('query_by_id', { id: pwdId.value }).then(res => {
+  if (res.code === 0) {
+    const { data } = res;
+    form.name = data.name;
+    form.url = data.url;
+    form.description = data.description;
+    form.username = data.username;
+    form.email = data.email;
+    form.phone = data.phone;
+    form.lastUpdate = data.lastUpdate;
+    form.pwd = data.pwd;
+  }
+});
 
 // 标题
 const title = ref(pwdId.value ? '密码信息' : '添加密码');
@@ -73,8 +89,8 @@ const form = reactive({
 });
 
 // 提交
-const onSubmit = () => {
-  console.log('submit!');
+const onSubmit = async () => {
+  await invoke('add_or_edit', { id: pwdId.value, password: { ...form } });
 };
 </script>
 <style lang="scss" scoped>

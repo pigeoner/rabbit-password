@@ -26,7 +26,7 @@
         <div class="content">
           <el-tooltip class="item" effect="dark" :content="pwd.url" placement="top-start" :disabled="!pwd.url">
             <a :href="pwd.url" target="_blank" class="favicon">
-              <img :src="pwd.favicon || rabbit" />
+              <img :src="getFavicon(pwd.url)" />
             </a>
           </el-tooltip>
           <div class="title">
@@ -38,7 +38,7 @@
             <span>{{ pwd.username }}</span>
           </div>
           <div class="last-update">
-            <span>{{ pwd.lastUpdate }}</span>
+            <span>{{ pwd.last_update.split(' ')[0] }}</span>
           </div>
           <div class="operation">
             <el-button text :icon="CopyDocument" @click="copyPwd(pwd.pwd)" />
@@ -57,44 +57,35 @@ import { Search, Plus, User, Delete, ZoomIn, CopyDocument } from '@element-plus/
 import { writeText } from '@tauri-apps/api/clipboard';
 import rabbit from '@/assets/rabbit.jpg';
 import { useRouter } from 'vue-router';
+import { invoke } from '@tauri-apps/api/tauri';
 const router = useRouter();
 
 // 表头
 const listTitle = ['名称', '用户名', '最后更新时间', '操作'];
 
-// 密码列表，测试数据
-const passwords = ref([
-  {
-    id: '1',
-    name: '百度',
-    url: 'https://www.baidu.com',
-    favicon: 'https://www.baidu.com/favicon.ico',
-    description: '百度一下，你就知道',
-    username: 'pigeoner',
-    lastUpdate: '2021-08-01',
-    pwd: '123456'
-  },
-  {
-    id: '2',
-    name: '百度',
-    url: 'https://www.baidu.com',
-    favicon: 'https://www.baidu.com/favicon.ico',
-    description: '百度一下，你就知道',
-    username: 'pigeoner',
-    lastUpdate: '2021-08-01',
-    pwd: '123456'
-  },
-  {
-    id: '3',
-    name: '阿里云',
-    url: null,
-    favicon: null,
-    description: '弗如腾讯云远甚',
-    username: 'pigeoner',
-    lastUpdate: '2021-08-01',
-    pwd: '123456'
+// 根据 url 获取图标
+const getFavicon = url => {
+  // 截取第三个斜杠之前的内容
+  // e.g. https://www.baidu.com
+  if (!url) return rabbit;
+  const reg = /^https?:\/\/[^/]+/;
+  const res = reg.exec(url);
+  return `${res}/favicon.ico`;
+};
+
+// 密码列表
+const passwords = ref([]);
+invoke('query').then(res => {
+  const { code, msg, data } = res;
+  if (code === 0) {
+    passwords.value = data;
+    passwords.value.map(item => {
+      item.favicon = item.url ? getFavicon(item.url) : null;
+    });
+  } else if (code === -1) {
+    ElMessage.error(msg);
   }
-]);
+});
 
 // 复制密码
 const copyPwd = async pwd => {
@@ -110,13 +101,21 @@ const copyPwd = async pwd => {
 // 搜索
 const searchContent = ref('');
 const searchPwd = () => {
-  console.log(searchContent.value);
+  invoke('query', { queryContent: searchContent.value }).then(res => {
+    const { code, msg, data } = res;
+    if (code === 0) {
+      passwords.value = data;
+      passwords.value.map(item => {
+        item.favicon = item.url ? getFavicon(item.url) : null;
+      });
+    } else if (code === -1) {
+      ElMessage.error(msg);
+    }
+  });
 };
 
 // 删除密码
-const deletePwd = id => {
-  console.log(id);
-};
+const deletePwd = async id => {};
 
 // 跳转到密码详情页
 const showInfo = id => {
@@ -192,7 +191,7 @@ const showInfo = id => {
       .favicon {
         height: 100%;
         width: calc(60px - 16px);
-        border-radius: 4px 0 0 4px;
+        // border-radius: 4px 0 0 4px;
         overflow: hidden;
         margin-right: 10px;
         img {

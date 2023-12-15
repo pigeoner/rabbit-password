@@ -1,14 +1,16 @@
 <template>
-  <div class="title">
-    <div class="avatar">
-      <img src="@/assets/rabbit.jpg" />
+  <div class="sidebar">
+    <div class="title">
+      <div class="avatar">
+        <img src="@/assets/rabbit.jpg" />
+      </div>
+      <h1>Rabbit Password</h1>
     </div>
-    <h1>Rabbit Password</h1>
-  </div>
-  <div class="tabs">
-    <router-link to="/home"><Item :icon="Lock" name="密码" /></router-link>
-    <router-link to="/setting"><Item :icon="Setting" name="设置" /></router-link>
-    <router-link to="/about"><Item :icon="InfoFilled" name="关于" /></router-link>
+    <div class="tabs">
+      <router-link to="/home"><Item :icon="Lock" name="密码" /></router-link>
+      <router-link to="/setting"><Item :icon="Setting" name="设置" /></router-link>
+      <router-link to="/about"><Item :icon="InfoFilled" name="关于" /></router-link>
+    </div>
   </div>
 </template>
 
