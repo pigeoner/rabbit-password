@@ -2,7 +2,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 mod db;
 use db::{
-    delete_data, edit_data_by_id, init_db, insert_data, query_data, query_data_by_id, Password,
+    delete_data, edit_data_by_id, init_db, insert_data, query_data, query_data_by_id,
+    update_all_pwd, Password,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -63,6 +64,11 @@ fn delete(id: u32) -> PwdResult {
     generate_result!(delete_data(id), "Failed to delete data: {:?}")
 }
 
+#[tauri::command]
+fn change_main_pwd(new_pwd: String, old_pwd: String) -> PwdResult {
+    generate_result!(update_all_pwd(new_pwd, old_pwd), "Failed to test: {:?}")
+}
+
 fn main() {
     tauri::Builder::default()
         .setup(|app| {
@@ -78,7 +84,8 @@ fn main() {
             insert,
             delete,
             query_by_id,
-            add_or_edit
+            add_or_edit,
+            change_main_pwd
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

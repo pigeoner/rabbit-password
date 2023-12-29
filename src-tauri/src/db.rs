@@ -1,5 +1,8 @@
+use aes::cipher::{generic_array::GenericArray, BlockDecrypt, BlockEncrypt, KeyInit};
+use aes::Aes256;
 use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
+use std::str::from_utf8;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Password {
@@ -131,4 +134,44 @@ pub fn edit_data_by_id(id: u32, password: &Password) -> rusqlite::Result<usize> 
 pub fn delete_data(id: u32) -> rusqlite::Result<usize> {
     let conn = Connection::open("data.db")?;
     conn.execute("DELETE FROM my_password WHERE id = ?1", params![id])
+}
+
+pub fn update_all_pwd(new_pwd: String, old_pwd: String) -> rusqlite::Result<usize> {
+    let conn = Connection::open("data.db")?;
+    // 首先查询数据库中所有数据的密码字段和id字段
+    let mut stmt = conn.prepare("SELECT id, pwd FROM my_password")?;
+    let rows = stmt.query_map(
+        [],
+        |row: &rusqlite::Row| -> rusqlite::Result<(u32, String)> { Ok((row.get(0)?, row.get(1)?)) },
+    )?;
+    let res: Vec<(u32, String)> = vec![rows.collect::<rusqlite::Result<Vec<_>>>()?]
+        .into_iter()
+        .flatten()
+        .collect();
+
+    // 对每一条数据的密码进行解密
+    let mut pwd_data = Vec::new();
+    for (id, pwd) in res {
+        let cipher = Aes256::new(GenericArray::from_slice(&old_pwd.as_bytes()[..32]));
+        let mut decrypted_pwd = GenericArray::clone_from_slice(&pwd.as_bytes());
+        println!("fdsagrlkjidsvbh");
+        cipher.decrypt_block(&mut decrypted_pwd);
+        pwd_data.push((id, decrypted_pwd));
+    }
+    println!("解密");
+
+    // 对每一条数据的密码进行加密
+    for (id, mut pwd) in &mut pwd_data {
+        let cipher = Aes256::new(GenericArray::from_slice(new_pwd.as_bytes()));
+        cipher.encrypt_block(&mut pwd);
+    }
+    println!("加密");
+
+    // 更新数据库中的密码字段
+    // conn.execute(
+    //     "UPDATE my_password SET pwd = ?1 WHERE id = ?2",
+    //     params![encrypted_data[0].1, encrypted_data[0].0],
+    // )
+    println!("{:?}", pwd_data);
+    conn.execute("SELECT * FROM my_password", [])
 }

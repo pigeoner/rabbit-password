@@ -1,6 +1,6 @@
 <template>
   <div class="header">
-    <el-input v-model="searchContent" class="w-50 m-2" placeholder="搜索密码" :prefix-icon="Search" />
+    <el-input v-model="searchContent" class="w-50 m-2" placeholder="搜索密码" :prefix-icon="Search" @input="searchPwd" />
     <el-button class="m-2 search-button" @click="searchPwd">
       <el-icon><Search /></el-icon>搜索
     </el-button>
@@ -57,7 +57,7 @@ import { Search, Plus, User, Delete, ZoomIn, CopyDocument } from '@element-plus/
 import { writeText } from '@tauri-apps/api/clipboard';
 import rabbit from '@/assets/rabbit.jpg';
 import { useRouter } from 'vue-router';
-import { invoke } from '@tauri-apps/api/tauri';
+import invoker from '../utils/invoker';
 const router = useRouter();
 
 // 表头
@@ -75,17 +75,17 @@ const getFavicon = url => {
 
 // 密码列表
 const passwords = ref([]);
-invoke('query').then(res => {
-  const { code, msg, data } = res;
-  if (code === 0) {
+
+// 获取密码列表
+const getPwdList = () =>
+  invoker('query', null, res => {
+    const { data } = res;
     passwords.value = data;
     passwords.value.map(item => {
       item.favicon = item.url ? getFavicon(item.url) : null;
     });
-  } else if (code === -1) {
-    ElMessage.error(msg);
-  }
-});
+  });
+getPwdList();
 
 // 复制密码
 const copyPwd = async pwd => {
@@ -100,22 +100,46 @@ const copyPwd = async pwd => {
 
 // 搜索
 const searchContent = ref('');
+const searchTimer = ref(null);
 const searchPwd = () => {
-  invoke('query', { queryContent: searchContent.value }).then(res => {
-    const { code, msg, data } = res;
-    if (code === 0) {
+  searchTimer;
+  // 搜索框防抖
+  clearTimeout(searchTimer.value);
+  searchTimer.value = setTimeout(() => {
+    invoker('query', { queryContent: searchContent.value }, res => {
+      const { data } = res;
       passwords.value = data;
       passwords.value.map(item => {
         item.favicon = item.url ? getFavicon(item.url) : null;
       });
-    } else if (code === -1) {
-      ElMessage.error(msg);
-    }
-  });
+    });
+  }, 500);
 };
 
 // 删除密码
-const deletePwd = async id => {};
+const deletePwd = async id => {
+  ElMessageBox.confirm('确认删除该密码？', '警告', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  })
+    .then(() => {
+      invoker('delete', { id }, _ => {
+        // 重新获取密码列表
+        getPwdList();
+        ElMessage({
+          type: 'success',
+          message: '删除成功'
+        });
+      });
+    })
+    .catch(() => {
+      ElMessage({
+        type: 'info',
+        message: '取消删除'
+      });
+    });
+};
 
 // 跳转到密码详情页
 const showInfo = id => {
