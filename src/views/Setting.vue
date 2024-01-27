@@ -82,19 +82,25 @@ const rules = ref({
 
 // 提交表单
 const changeMainPwd = formName => {
-  // // 测试
-  // const newMainPwd = enc.encryptSHA512(form.newPassword);
-  // invoker('change_main_pwd', { newPwd: enc.encrypt(newMainPwd), oldPwd: enc.encrypt(form.oldPassword) }, _ => {
-  //   ElMessage.success('修改成功');
-  //   localStorage.setItem('mainPassword', newMainPwd);
-  // });
   formRef.value.validate(valid => {
     if (valid) {
       // 表单验证通过，执行提交操作
       const newMainPwd = enc.encryptSHA512(form.newPassword);
-      invoker('change_main_pwd', { newPwd: enc.encryptSHA512(newMainPwd), oldPwd: enc.encryptSHA512(form.oldPassword) }, _ => {
-        ElMessage.success('修改成功');
-        localStorage.setItem('mainPassword', newMainPwd);
+      const oldMainPwd = enc.encryptSHA512(form.oldPassword);
+      invoker('getAccounts', null, res => {
+        const newAccountsChangeInfo = res.map(item => {
+          item.pwd = enc.encrypt(enc.decrypt(item.pwd, oldMainPwd), newMainPwd);
+          return {
+            key: item.id,
+            changes: {
+              pwd: item.pwd
+            }
+          };
+        });
+        invoker('updateAccounts', newAccountsChangeInfo, _ => {
+          ElMessage.success('修改成功');
+          localStorage.setItem('mainPassword', newMainPwd);
+        });
       });
     } else {
       // 表单验证不通过，进行错误处理
@@ -103,7 +109,7 @@ const changeMainPwd = formName => {
   });
 };
 const resetForm = formName => {
-  console.log(formName);
+  formRef.value.resetFields();
 };
 </script>
 

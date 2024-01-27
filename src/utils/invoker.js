@@ -1,16 +1,13 @@
-import { invoke } from '@tauri-apps/api/tauri';
+// import { invoke } from '@tauri-apps/api/tauri';
+import db from './db';
 
-export default function invoker(cmd, args, sucFunc, errFunc) {
-  return invoke(cmd, args)
+export default function invoker(cmd, arg, sucFunc, errFunc) {
+  return db[cmd](arg)
     .then(res => {
-      if (res.code === 0) {
-        sucFunc(res);
-      } else {
-        return Promise.reject(res.msg);
-      }
+      sucFunc && sucFunc(res);
     })
     .catch(err => {
-      ElMessage.error(err.message || err);
-      errFunc ? errFunc(res) : null;
+      ElMessage.error(err?.message || err);
+      errFunc && errFunc(res);
     });
 }

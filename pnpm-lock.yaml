@@ -6,6 +6,7 @@ specifiers:
   '@tauri-apps/cli': ^1.5.7
   '@vitejs/plugin-vue': ^4.2.3
   crypto-js: ^4.2.0
+  dexie: 4.0.1-beta.6
   element-plus: ^2.4.3
   sass: ^1.69.5
   sqlite3: ^5.1.6
@@ -19,6 +20,7 @@ dependencies:
   '@element-plus/icons-vue': 2.3.1_vue@3.3.11
   '@tauri-apps/api': 1.5.2
   crypto-js: 4.2.0
+  dexie: 4.0.1-beta.6
   element-plus: 2.4.3_vue@3.3.11
   sqlite3: 5.1.6
   vue: 3.3.11
@@ -818,6 +820,10 @@ packages:
   /detect-libc/2.0.2:
     resolution: {integrity: sha512-UX6sGumvvqSaXgdKGUsgZWqcUyIXZ/vZTrlRT/iobiKhGL0zL4d3osHj3uqllWJK+i+sixDS/3COVEOFbupFyw==}
     engines: {node: '>=8'}
+    dev: false
+
+  /dexie/4.0.1-beta.6:
+    resolution: {integrity: sha512-NOexH4Rn8mrdSg/bn3YNFdPzQ1vPNxgPYLGWGU46z26NYGW1XmC0hhjjttwx9jYwba1K9Ypo1ZbZLNKtK6INSg==}
     dev: false
 
   /element-plus/2.4.3_vue@3.3.11:

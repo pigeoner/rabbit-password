@@ -153,19 +153,17 @@ pub fn update_all_pwd(new_pwd: String, old_pwd: String) -> rusqlite::Result<usiz
     let mut pwd_data = Vec::new();
     for (id, pwd) in res {
         let cipher = Aes256::new(GenericArray::from_slice(&old_pwd.as_bytes()[..32]));
+        println!("下面这条语句会出现bug，但是因为用不到了所以不改了");
         let mut decrypted_pwd = GenericArray::clone_from_slice(&pwd.as_bytes());
-        println!("fdsagrlkjidsvbh");
         cipher.decrypt_block(&mut decrypted_pwd);
         pwd_data.push((id, decrypted_pwd));
     }
-    println!("解密");
 
     // 对每一条数据的密码进行加密
     for (id, mut pwd) in &mut pwd_data {
         let cipher = Aes256::new(GenericArray::from_slice(new_pwd.as_bytes()));
         cipher.encrypt_block(&mut pwd);
     }
-    println!("加密");
 
     // 更新数据库中的密码字段
     // conn.execute(

@@ -53,7 +53,7 @@
 import { computed, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { DArrowLeft } from '@element-plus/icons-vue';
-import invoker from '@/utils/invoker';
+import invoker from '../utils/invoker';
 import enc from '@/utils/encrypt';
 import generateRandomPwd from '@/utils/randomPwd';
 import { h } from 'vue';
@@ -74,19 +74,17 @@ const isEdit = ref(false);
 const isDisabled = computed(() => !isEdit.value && !!pwdId.value);
 
 // 获取信息
-!!pwdId.value
-  ? invoker('query_by_id', { id: pwdId.value }, res => {
-      const { data } = res;
-      form.name = data.name;
-      form.url = data.url;
-      form.description = data.description;
-      form.username = data.username;
-      form.email = data.email;
-      form.phone = data.phone;
-      form.lastUpdate = data.lastUpdate;
-      form.pwd = enc.decrypt(data.pwd, mainPwd.value);
-    })
-  : null;
+!!pwdId.value &&
+  invoker('getAccount', pwdId.value, data => {
+    form.name = data.name;
+    form.url = data.url;
+    form.description = data.description;
+    form.username = data.username;
+    form.email = data.email;
+    form.phone = data.phone;
+    form.last_update = data.last_update;
+    form.pwd = enc.decrypt(data.pwd, mainPwd.value);
+  });
 
 // 标题
 const title = ref(pwdId.value ? '密码信息' : '添加密码');
@@ -98,7 +96,7 @@ const form = reactive({
   username: '', // 登录用户名
   email: '', // 邮箱
   phone: '', // 手机号
-  lastUpdate: '', // 最后更新时间
+  last_update: '', // 最后更新时间
   pwd: '' // 密码
 });
 
@@ -168,18 +166,22 @@ const onSubmit = () => {
   formRef.value.validate(valid => {
     if (valid) {
       // 表单验证通过，执行提交操作
-      invoker(
-        'add_or_edit',
-        {
-          id: pwdId.value,
-          password: { ...form, pwd: enc.encrypt(form.pwd, mainPwd.value) }
-        },
-        res => {
-          ElMessage.success(`${!!pwdId.value ? '修改' : '创建'}成功`);
+      if (pwdId.value !== 0) {
+        invoker(
+          'updateAccount',
+          { id: pwdId.value, ...form, pwd: enc.encrypt(form.pwd, mainPwd.value), last_update: new Date().toLocaleString() },
+          _ => {
+            ElMessage.success('修改成功');
+            isEdit.value = false;
+          }
+        );
+      } else {
+        invoker('addAccount', { ...form, pwd: enc.encrypt(form.pwd, mainPwd.value), last_update: new Date().toLocaleString() }, _ => {
+          ElMessage.success('创建成功');
           isEdit.value = false;
-          !pwdId.value ? router.push('/home') : null;
-        }
-      );
+          router.push('/home');
+        });
+      }
     } else {
       // 表单验证不通过，进行错误处理
       ElMessage.error('表单验证不通过');

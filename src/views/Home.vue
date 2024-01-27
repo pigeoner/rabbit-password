@@ -26,7 +26,7 @@
         <div class="content">
           <el-tooltip class="item" effect="dark" :content="pwd.url" placement="top-start" :disabled="!pwd.url">
             <a :href="pwd.url" target="_blank" class="favicon">
-              <img :src="getFavicon(pwd.url)" />
+              <img :src="getFavicon(pwd.url)" @error="handleFaviconError" />
             </a>
           </el-tooltip>
           <div class="title">
@@ -57,6 +57,7 @@ import { Search, Plus, User, Delete, ZoomIn, CopyDocument } from '@element-plus/
 import { writeText } from '@tauri-apps/api/clipboard';
 import rabbit from '@/assets/rabbit.jpg';
 import { useRouter } from 'vue-router';
+import enc from '@/utils/encrypt';
 import invoker from '../utils/invoker';
 const router = useRouter();
 
@@ -73,13 +74,16 @@ const getFavicon = url => {
   return `${res}/favicon.ico`;
 };
 
+// 处理图标加载失败
+const handleFaviconError = e => {
+  e.target.src = rabbit;
+};
+
 // 密码列表
 const passwords = ref([]);
-
 // 获取密码列表
 const getPwdList = () =>
-  invoker('query', null, res => {
-    const { data } = res;
+  invoker('getAccounts', null, data => {
     passwords.value = data;
     passwords.value.map(item => {
       item.favicon = item.url ? getFavicon(item.url) : null;
@@ -89,7 +93,7 @@ getPwdList();
 
 // 复制密码
 const copyPwd = async pwd => {
-  writeText(pwd)
+  writeText(enc.decrypt(pwd, localStorage.getItem('mainPassword')))
     .then(res => {
       ElMessage.success('复制成功');
     })
@@ -106,8 +110,7 @@ const searchPwd = () => {
   // 搜索框防抖
   clearTimeout(searchTimer.value);
   searchTimer.value = setTimeout(() => {
-    invoker('query', { queryContent: searchContent.value }, res => {
-      const { data } = res;
+    invoker('searchAccounts', { searchContent: searchContent.value }, data => {
       passwords.value = data;
       passwords.value.map(item => {
         item.favicon = item.url ? getFavicon(item.url) : null;
@@ -124,7 +127,7 @@ const deletePwd = async id => {
     type: 'warning'
   })
     .then(() => {
-      invoker('delete', { id }, _ => {
+      invoker('deleteAccount', { id }, _ => {
         // 重新获取密码列表
         getPwdList();
         ElMessage({
